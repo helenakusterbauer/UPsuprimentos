@@ -4,6 +4,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
@@ -18,6 +19,11 @@ const app = express();
 // Middlewares gerais
 app.use(cors());
 app.use(express.json());
+
+app.use(
+    '/uploads',
+    express.static(path.join(__dirname, '../uploads'))
+);
 
 // Rota inicial para verificar se a API esta funcionando
 app.get('/', (req, res) => {
@@ -43,7 +49,12 @@ app.get('/catalogo', async (req, res, next) => {
             nome: produto.nome,
             descricao: produto.descricao,
             marca: produto.marca,
-            categoria_nome: produto.categoria_nome
+            categoria_nome: produto.categoria_nome,
+
+            // Foto do produto
+            imagem: produto.imagem
+                ? `${req.protocol}://${req.get('host')}/uploads/${produto.imagem}`
+                : null
         }));
 
         res.json(catalogo);
@@ -52,6 +63,7 @@ app.get('/catalogo', async (req, res, next) => {
         next(erro);
     }
 });
+
 
 // Rota nao encontrada (404)
 app.use((req, res) => {
