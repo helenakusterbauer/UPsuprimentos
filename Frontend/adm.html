@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Gestão | UP Suprimentos</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Garantir que as abas ocultas não apareçam */
+        [hidden] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin">
+
+        <!-- MENU LATERAL -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                <img
+                    src="assets/logo.png.jpeg"
+                    alt="Logo UP Suprimentos"
+                >
+
+                <span>UP SUPRIMENTOS</span>
+            </div>
+
+            <p>Controle de estoque</p>
+
+            <nav>
+                <button
+                    type="button"
+                    data-aba="dashboard"
+                    class="active"
+                >
+                    Visão geral
+                </button>
+
+                <button
+                    type="button"
+                    data-aba="produtos"
+                >
+                    Produtos
+                </button>
+
+                <button
+                    type="button"
+                    data-aba="categorias"
+                >
+                    Categorias
+                </button>
+
+                <button
+                    type="button"
+                    data-aba="movimentacoes"
+                >
+                    Movimentações
+                </button>
+
+                <!-- VISÍVEL SOMENTE PARA ADMIN -->
+                <button
+                    type="button"
+                    data-aba="funcionarios"
+                    class="somente-admin"
+                    hidden
+                >
+                    Funcionários
+                </button>
+
+                <a href="index.html" target="_blank">
+                    Ver portfólio
+                </a>
+
+                <button type="button" id="sair">
+                    Sair
+                </button>
+            </nav>
+
+        </aside>
+
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="admin-main">
+
+            <div class="admin-top">
+
+                <div>
+                    <span class="eyebrow">
+                        CONTROLE DE ESTOQUE
+                    </span>
+
+                    <h1 id="titulo-aba">
+                        Visão geral
+                    </h1>
+                </div>
+
+                <span id="nome-usuario"></span>
+
+            </div>
+
+            <!-- MENSAGENS -->
+            <p id="mensagem" role="status"></p>
+
+
+           
+            <!-- DASHBOARD -->
+           
+
+            <section
+                class="admin-section"
+                id="dashboard"
+            >
+
+                <div class="stats">
+
+                    <div class="stat">
+                        Produtos
+                        <strong id="total-produtos">—</strong>
+                    </div>
+
+                    <div class="stat">
+                        Categorias
+                        <strong id="total-categorias">—</strong>
+                    </div>
+
+                    <div class="stat">
+                        Itens em estoque
+                        <strong id="total-itens">—</strong>
+                    </div>
+
+                    <!-- VALOR FINANCEIRO: SOMENTE ADMIN -->
+                    <div
+                        class="stat"
+                        id="card-valor-estoque"
+                    >
+                        Valor do estoque
+                        <strong id="total-valor">—</strong>
+                    </div>
+
+                </div>
+
+                <div class="panel">
+
+                    <h2>Estoque mínimo</h2>
+
+                    <div id="alertas"></div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PRODUTOS -->
+           
+
+            <section
+                class="admin-section"
+                id="produtos"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="novo-produto"
+                >
+                    + Novo produto
+                </button>
+
+                <div class="panel">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Marca</th>
+                                <th>Preço</th>
+                                <th>Qtd.</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabela-produtos"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- CATEGORIAS -->
+           
+
+            <section
+                class="admin-section"
+                id="categorias"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="nova-categoria"
+                >
+                    + Nova categoria
+                </button>
+
+                <div class="panel">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Descrição</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabela-categorias"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            
+            <!-- MOVIMENTAÇÕES -->
+           
+
+            <section
+                class="admin-section"
+                id="movimentacoes"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="nova-movimentacao"
+                >
+                    + Registrar entrada/saída
+                </button>
+
+                <div class="panel">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Produto</th>
+                                <th>Tipo</th>
+                                <th>Qtd.</th>
+                                <th>Usuário</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabela-movimentacoes"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+           
+            <!-- FUNCIONÁRIOS - SOMENTE ADMIN -->
+            
+
+            <section
+                class="admin-section"
+                id="funcionarios"
+                hidden
+            >
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="novo-funcionario"
+                >
+                    + Novo funcionário
+                </button>
+
+                <div class="panel">
+
+                    <h2>Funcionários cadastrados</h2>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Perfil</th>
+                                <th>Data de cadastro</th>
+                            </tr>
+                        </thead>
+
+                        <!-- IMPORTANTE:
+                             Este ID é usado pelo admin.js -->
+                        <tbody id="tabela-funcionarios"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- MODAL DOS FORMULÁRIOS -->
+    
+
+    <dialog id="modal">
+
+        <button
+            type="button"
+            class="close"
+            id="fechar"
+            aria-label="Fechar"
+        >
+            ×
+        </button>
+
+        <h2 id="modal-titulo"></h2>
+
+        <form id="formulario">
+
+            <div
+                id="campos"
+                class="form-grid"
+            ></div>
+
+            <button
+                class="btn"
+                type="submit"
+            >
+                Salvar
+            </button>
+
+        </form>
+
+    </dialog>
+
+
+    
+    <!-- JAVASCRIPT -->
+    
+
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+
+</body>
+
+</html>
