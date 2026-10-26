@@ -8,6 +8,7 @@ const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
+const marcaRoutes = require('./routes/marcaRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
 const movimentacaoRoutes = require('./routes/movimentacaoRoutes');
 
