@@ -54,6 +54,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
 
 let produtos = [];
 let categorias = [];
+let marcas = [];
 let movimentacoes = [];
 let funcionarios = [];
 
@@ -162,6 +163,7 @@ function trocar(aba) {
         dashboard: 'Visão geral',
         produtos: 'Produtos',
         categorias: 'Categorias',
+        marcas: 'Marcas',
         movimentacoes: 'Movimentações',
         funcionarios: 'Funcionários'
     })[aba];
@@ -245,9 +247,10 @@ async function carregar(aba) {
 
 
         if (aba === 'produtos') {
-            [produtos, categorias] = await Promise.all([
+            [produtos, categorias, marcas] = await Promise.all([
                 api('/produtos'),
-                api('/categorias')
+                api('/categorias'),
+                api('/marcas')
             ]);
 
 
@@ -315,6 +318,38 @@ async function carregar(aba) {
                             class="action danger"
                             data-acao="excluir-categoria"
                             data-id="${esc(c.ID_categoria)}"
+                        >
+                            Excluir
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // MARCAS
+
+        if (aba === 'marcas') {
+            marcas = await api('/marcas');
+
+            $('#tabela-marcas').innerHTML = marcas.map(m => `
+                <tr>
+                    <td>${esc(m.nome)}</td>
+                    <td>${esc(m.descricao)}</td>
+                    <td>
+                        <button
+                            type="button"
+                            class="action"
+                            data-acao="editar-marca"
+                            data-id="${esc(m.ID_marca)}"
+                        >
+                            Editar
+                        </button>
+
+                        <button
+                            type="button"
+                            class="action danger"
+                            data-acao="excluir-marca"
+                            data-id="${esc(m.ID_marca)}"
                         >
                             Excluir
                         </button>
@@ -480,6 +515,7 @@ function abrir(tipo, obj = null) {
     $('#modal-titulo').textContent = ({
         produto: 'Produto',
         categoria: 'Categoria',
+        marca: 'Marca',
         movimentacao: 'Entrada / saída',
         funcionario: 'Cadastrar funcionário'
     })[tipo];
@@ -503,12 +539,24 @@ function abrir(tipo, obj = null) {
             ) +
 
 
-            field(
-                'marca',
-                'Marca',
-                'text',
-                obj?.marca
-            ) +
+           `
+            <label class="field">
+                Marca
+                <select name="ID_marca" required>
+                    <option value="">Selecione uma marca</option>
+                    ${marcas.map(m => `
+                        <option
+                            value="${esc(m.ID_marca)}"
+                            ${String(m.ID_marca) === String(obj?.ID_marca)
+                                ? 'selected'
+                                : ''}
+                        >
+                            ${esc(m.nome)}
+                        </option>
+                    `).join('')}
+                </select>
+            </label>
+        ` +
 
 
             field(
@@ -627,6 +675,28 @@ function abrir(tipo, obj = null) {
             `;
     }
 
+    // FORMULÁRIO DE MARCA
+
+        if (tipo === 'marca') {
+            $('#campos').innerHTML =
+                field(
+                    'nome',
+                    'Nome da marca',
+                    'text',
+                    obj?.nome,
+                    'required'
+                ) +
+                `
+                <label class="field wide">
+                    Descrição
+
+                    <textarea
+                        name="descricao"
+                        rows="3"
+                    >${esc(obj?.descricao)}</textarea>
+                </label>
+                `;
+        }
 
    
     // FORMULÁRIO DE MOVIMENTAÇÃO
@@ -727,34 +797,22 @@ function abrir(tipo, obj = null) {
 }
 
 
-
-
 // BOTÕES PARA ABRIR E FECHAR MODAIS
-
-
-
 
 $('#fechar').onclick = () => $('#modal').close();
 
-
 $('#novo-produto').onclick = () => abrir('produto');
-
 
 $('#nova-categoria').onclick = () => abrir('categoria');
 
+$('#nova-marca').onclick = () => abrir('marca');
 
 $('#nova-movimentacao').onclick = () => abrir('movimentacao');
-
 
 $('#novo-funcionario').onclick = () => abrir('funcionario');
 
 
-
-
 // ENVIO DOS FORMULÁRIOS
-
-
-
 
 $('#formulario').onsubmit = async e => {
     e.preventDefault();
@@ -822,6 +880,20 @@ $('#formulario').onsubmit = async e => {
             );
         }
 
+        // SALVAR MARCA
+
+        if (modo === 'marca') {
+            await api(
+                editando
+                    ? `/marcas/${editando.ID_marca}`
+                    : '/marcas',
+                {
+                    method: editando ? 'PUT' : 'POST',
+                    body: JSON.stringify(dados)
+                }
+            );
+        }
+
 
      
         // SALVAR MOVIMENTAÇÃO
@@ -880,7 +952,9 @@ $('#formulario').onsubmit = async e => {
                     ? 'produtos'
                     : modo === 'funcionario'
                         ? 'funcionarios'
-                        : 'categorias';
+                        : modo === 'marca'
+                            ? 'marcas'
+                            : 'categorias';
 
 
         await carregar(abaAtual);
@@ -1017,6 +1091,53 @@ if (
 
         return;
     }
+
+    // EDITAR MARCA
+
+        if (acao === 'editar-marca') {
+            const marca = marcas.find(
+                m => Number(m.ID_marca) === id
+            );
+
+            if (!marca) {
+                aviso('Marca não encontrada.', true);
+                return;
+            }
+
+            abrir('marca', marca);
+            return;
+        }
+        // EXCLUIR MARCA
+
+        if (acao === 'excluir-marca') {
+            const marca = marcas.find(
+                m => Number(m.ID_marca) === id
+            );
+
+            if (!marca) {
+                aviso('Marca não encontrada.', true);
+                return;
+            }
+
+            if (!confirm(`Deseja realmente excluir a marca "${marca.nome}"?`)) {
+                return;
+            }
+
+            try {
+                await api(`/marcas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                await carregar('marcas');
+
+                aviso('Marca excluída com sucesso.');
+
+            } catch (err) {
+                aviso(err.message, true);
+            }
+
+            return;
+        }
 
 
    

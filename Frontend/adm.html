@@ -64,6 +64,13 @@
 
                 <button
                     type="button"
+                    data-aba="marcas"
+                >
+                    Marcas
+                </button>
+
+                <button
+                    type="button"
                     data-aba="movimentacoes"
                 >
                     Movimentações
@@ -219,6 +226,7 @@
                     + Nova categoria
                 </button>
 
+
                 <div class="panel">
 
                     <table>
@@ -237,6 +245,36 @@
 
                 </div>
 
+            </section>
+
+            <!-- MARCAS -->
+
+            <section
+                class="admin-section"
+                id="marcas"
+                hidden
+            >
+                <button
+                    type="button"
+                    class="btn"
+                    id="nova-marca"
+                >
+                    + Nova marca
+                </button>
+
+                <div class="panel">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Descrição</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabela-marcas"></tbody>
+                    </table>
+                </div>
             </section>
 
 

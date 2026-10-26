@@ -36,6 +36,7 @@ app.get('/', (req, res) => {
 // Registro das rotas do sistema
 app.use('/auth', authRoutes);
 app.use('/categorias', categoriaRoutes);
+app.use('/marcas', marcaRoutes);
 app.use('/produtos', produtoRoutes);
 app.use('/movimentacoes', movimentacaoRoutes);
 
