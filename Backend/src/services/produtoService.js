@@ -12,7 +12,7 @@ async function validar(dados) {
         nome,
         preco,
         quantidade,
-        marca,
+        ID_marca,
         estoque_minimo,
         ID_categoria
     } = dados;
@@ -33,8 +33,8 @@ async function validar(dados) {
         lancar('Quantidade inválida.');
     }
 
-    if (!marca || marca.trim().length < 2) {
-        lancar('A marca do produto é obrigatória.');
+    if (!ID_marca) {
+        lancar('Selecione uma marca.');
     }
 
     if (

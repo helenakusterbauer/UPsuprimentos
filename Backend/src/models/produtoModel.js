@@ -30,7 +30,7 @@ async function criar(dados) {
         descricao,
         preco,
         quantidade,
-        marca,
+        ID_marca,
         estoque_minimo,
         ID_categoria,
         imagem
@@ -42,7 +42,7 @@ async function criar(dados) {
             descricao,
             preco,
             quantidade,
-            marca,
+            ID_marca,
             estoque_minimo,
             ID_categoria,
             imagem
@@ -53,7 +53,7 @@ async function criar(dados) {
         descricao,
         preco,
         quantidade,
-        marca,
+        ID_marca,
         estoque_minimo,
         ID_categoria,
         imagem ?? null
@@ -68,7 +68,7 @@ async function atualizar(id, dados) {
         descricao,
         preco,
         quantidade,
-        marca,
+        ID_marca,
         estoque_minimo,
         ID_categoria,
         imagem
@@ -81,7 +81,7 @@ async function atualizar(id, dados) {
             descricao = ?,
             preco = ?,
             quantidade = ?,
-            marca = ?,
+            ID_marca = ?,
             estoque_minimo = ?,
             ID_categoria = ?,
             imagem = ?
@@ -91,7 +91,7 @@ async function atualizar(id, dados) {
         descricao,
         preco,
         quantidade,
-        marca,
+        ID_marca,
         estoque_minimo,
         ID_categoria,
         imagem ?? null,
