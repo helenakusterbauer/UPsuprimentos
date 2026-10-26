@@ -44,14 +44,16 @@ async function login({ email, senha }) {
         throw erro;
     }
 
-    // Verificar se o usuário foi excluído
+    
+    // Verificar se o usuário está desativado
     if (Number(usuario.ativo) !== 1) {
         const erro = new Error(
-            'Este usuário foi excluído e não possui mais acesso ao sistema.'
+            'Este usuário está desativado e não possui acesso ao sistema.'
         );
         erro.status = 403;
         throw erro;
     }
+
 
     // Verificar a senha
     const senhaConfere = await bcrypt.compare(

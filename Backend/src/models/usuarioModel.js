@@ -1,4 +1,3 @@
-
 const pool = require('../config/db');
 
 // BUSCAR USUÁRIO PELO E-MAIL
@@ -47,7 +46,7 @@ async function criar({ nome, email, senha_hash }) {
     };
 }
 
-// LISTAR SOMENTE FUNCIONÁRIOS ATIVOS
+// LISTAR FUNCIONÁRIOS ATIVOS E INATIVOS
 async function listarFuncionarios() {
     const [linhas] = await pool.query(
         `SELECT
@@ -55,17 +54,17 @@ async function listarFuncionarios() {
             nome,
             email,
             tipo,
+            ativo,
             data_criacao
          FROM usuario
          WHERE tipo = 'FUNCIONARIO'
-           AND ativo = 1
          ORDER BY nome ASC`
     );
 
     return linhas;
 }
 
-// EXCLUIR FUNCIONÁRIO SEM APAGAR O HISTÓRICO
+// DESATIVAR FUNCIONÁRIO SEM APAGAR O HISTÓRICO
 async function desativarFuncionario(ID_usuario) {
     const [resultado] = await pool.query(
         `UPDATE usuario
@@ -79,11 +78,26 @@ async function desativarFuncionario(ID_usuario) {
     return resultado.affectedRows > 0;
 }
 
+// ATIVAR FUNCIONÁRIO NOVAMENTE
+async function ativarFuncionario(ID_usuario) {
+    const [resultado] = await pool.query(
+        `UPDATE usuario
+         SET ativo = 1
+         WHERE ID_usuario = ?
+           AND tipo = 'FUNCIONARIO'
+           AND ativo = 0`,
+        [ID_usuario]
+    );
+
+    return resultado.affectedRows > 0;
+}
+
 // EXPORTAR AS FUNÇÕES
 module.exports = {
     buscarPorEmail,
     buscarPorID,
     criar,
     listarFuncionarios,
-    desativarFuncionario
+    desativarFuncionario,
+    ativarFuncionario
 };

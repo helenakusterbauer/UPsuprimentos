@@ -362,55 +362,64 @@ async function carregar(aba) {
        
 
 
-        if (aba === 'funcionarios') {
-            if (!ehAdmin) {
-                throw Error(
-                    'Acesso permitido somente ao administrador.'
-                );
-            }
+        
+if (aba === 'funcionarios') {
+    if (!ehAdmin) {
+        throw Error(
+            'Acesso permitido somente ao administrador.'
+        );
+    }
 
+    funcionarios = await api('/auth/funcionarios');
 
-            funcionarios = await api('/auth/funcionarios');
+    $('#tabela-funcionarios').innerHTML =
+        funcionarios.map(f => {
+            const ativo = Number(f.ativo) === 1;
 
+            return `
+                <tr>
+                    <td>${esc(f.nome)}</td>
+                    <td>${esc(f.email)}</td>
+                    <td>${esc(f.tipo)}</td>
 
-            $('#tabela-funcionarios').innerHTML =
-                funcionarios.map(f => `
-                    <tr>
-                        <td>${esc(f.nome)}</td>
-                        <td>${esc(f.email)}</td>
-                        <td>${esc(f.tipo)}</td>
+                    <td>
+                        ${f.data_criacao
+                            ? esc(
+                                new Date(
+                                    f.data_criacao
+                                ).toLocaleDateString('pt-BR')
+                            )
+                            : '—'}
+                    </td>
 
+                    <td>
+                        ${ativo ? 'Ativo' : 'Inativo'}
+                    </td>
 
-                        <td>
-                            ${f.data_criacao
-                                ? esc(
-                                    new Date(
-                                        f.data_criacao
-                                    ).toLocaleDateString('pt-BR')
-                                )
-                                : '—'}
-                        </td>
-
-
-                        <td>
-                            <button
-                                type="button"
-                                class="action danger"
-                                data-acao="excluir-funcionario"
-                                data-id="${esc(f.ID_usuario)}"
-                            >
-                                Excluir
-                            </button>
-                        </td>
-                    </tr>
-                `).join('') || `
-                    <tr>
-                        <td colspan="5">
-                            Nenhum funcionário cadastrado.
-                        </td>
-                    </tr>
-                `;
-        }
+                    <td>
+                        <button
+                            type="button"
+                            class="action ${ativo ? 'danger' : ''}"
+                            data-acao="${
+                                ativo
+                                    ? 'desativar-funcionario'
+                                    : 'ativar-funcionario'
+                            }"
+                            data-id="${esc(f.ID_usuario)}"
+                        >
+                            ${ativo ? 'Desativar' : 'Ativar'}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('') || `
+            <tr>
+                <td colspan="6">
+                    Nenhum funcionário cadastrado.
+                </td>
+            </tr>
+        `;
+}
 
 
     } catch (e) {
@@ -880,10 +889,11 @@ $('#formulario').onsubmit = async e => {
         aviso('Operação realizada com sucesso.');
 
 
-    } catch (err) {
-        aviso(err.message, true);
-    }
-};
+        } catch (err) {
+            window.alert(err.message);
+        }
+
+        };
 
 
 
@@ -907,71 +917,70 @@ document.addEventListener('click', async e => {
 
 
    
-    // EXCLUIR FUNCIONÁRIO
-   
-
-
-    if (acao === 'excluir-funcionario') {
-        if (!ehAdmin) {
-            aviso(
-                'Acesso permitido somente ao administrador.',
-                true
-            );
-            return;
-        }
-
-
-        const funcionario = funcionarios.find(
-            f => Number(f.ID_usuario) === id
+// ATIVAR OU DESATIVAR FUNCIONÁRIO
+if (
+    acao === 'ativar-funcionario' ||
+    acao === 'desativar-funcionario'
+) {
+    if (!ehAdmin) {
+        aviso(
+            'Acesso permitido somente ao administrador.',
+            true
         );
-
-
-        if (!funcionario) {
-            aviso(
-                'Funcionário não encontrado.',
-                true
-            );
-            return;
-        }
-
-
-        const confirmar = confirm(
-            `Deseja excluir o funcionário ${funcionario.nome}?\n\n` +
-            'Ele perderá o acesso ao sistema, mas seu histórico de movimentações será preservado.'
-        );
-
-
-        if (!confirmar) {
-            return;
-        }
-
-
-        // Impedir cliques repetidos
-        b.disabled = true;
-
-
-        try {
-            await api(`/auth/funcionarios/${id}`, {
-                method: 'DELETE'
-            });
-
-
-            await carregar('funcionarios');
-
-
-            aviso(
-                'Funcionário excluído com sucesso. O histórico foi preservado.'
-            );
-
-
-        } catch (err) {
-            aviso(err.message, true);
-            b.disabled = false;
-        }
-
-
         return;
     }
+
+    const funcionario = funcionarios.find(
+        f => Number(f.ID_usuario) === id
+    );
+
+    if (!funcionario) {
+        aviso('Funcionário não encontrado.', true);
+        return;
+    }
+
+    const ativar = acao === 'ativar-funcionario';
+
+    const operacao = ativar ? 'ativar' : 'desativar';
+
+    const confirmar = confirm(
+        `Deseja ${operacao} o funcionário ${funcionario.nome}?\n\n` +
+        (
+            ativar
+                ? 'Ele poderá voltar a acessar o sistema.'
+                : 'Ele perderá o acesso ao sistema, mas seu cadastro e histórico serão preservados.'
+        )
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    b.disabled = true;
+
+    try {
+        await api(
+            `/auth/funcionarios/${id}/${operacao}`,
+            {
+                method: 'PATCH'
+            }
+        );
+
+        await carregar('funcionarios');
+
+        aviso(
+            ativar
+                ? 'Funcionário ativado com sucesso.'
+                : 'Funcionário desativado com sucesso. O histórico foi preservado.'
+        );
+
+    } catch (err) {
+        aviso(err.message, true);
+        b.disabled = false;
+    }
+
+    return;
+}
 
 
    

@@ -1,4 +1,3 @@
-
 const authService = require('../services/authService');
 const usuarioModel = require('../models/usuarioModel');
 
@@ -25,7 +24,7 @@ async function registrar(req, res, next) {
             senha
         });
 
-        res.status(201).json(usuario);
+        return res.status(201).json(usuario);
 
     } catch (e) {
         next(e);
@@ -48,71 +47,131 @@ async function login(req, res, next) {
             senha
         });
 
-        res.json(resultado);
+        return res.json(resultado);
 
     } catch (e) {
         next(e);
     }
 }
 
-// LISTAR FUNCIONÁRIOS ATIVOS
+// LISTAR FUNCIONÁRIOS ATIVOS E INATIVOS
 async function listarFuncionarios(req, res, next) {
     try {
         const funcionarios =
             await usuarioModel.listarFuncionarios();
 
-        res.json(funcionarios);
+        return res.json(funcionarios);
 
     } catch (e) {
         next(e);
     }
 }
 
-// EXCLUIR FUNCIONÁRIO
-// Mantém o histórico de movimentações no banco.
-async function excluirFuncionario(req, res, next) {
-    try {
-        const ID_usuario = Number(req.params.id);
+// VALIDAR ID DO FUNCIONÁRIO
+function validarID(req, res) {
+    const ID_usuario = Number(req.params.id);
 
-        // Verificar se o ID é válido
-        if (
-            !Number.isSafeInteger(ID_usuario) ||
-            ID_usuario <= 0
-        ) {
-            return res.status(400).json({
-                erro: 'ID do funcionário inválido.'
-            });
+    if (
+        !Number.isSafeInteger(ID_usuario) ||
+        ID_usuario <= 0
+    ) {
+        res.status(400).json({
+            erro: 'ID do funcionário inválido.'
+        });
+
+        return null;
+    }
+
+    return ID_usuario;
+}
+
+// DESATIVAR FUNCIONÁRIO
+async function desativarFuncionario(req, res, next) {
+    try {
+        const ID_usuario = validarID(req, res);
+
+        if (ID_usuario === null) {
+            return;
         }
 
-        // Verificar se o funcionário existe
-        const usuario = await usuarioModel.buscarPorID(
-            ID_usuario
-        );
+        const usuario =
+            await usuarioModel.buscarPorID(ID_usuario);
 
         if (
             !usuario ||
-            usuario.tipo !== 'FUNCIONARIO' ||
-            Number(usuario.ativo) !== 1
+            usuario.tipo !== 'FUNCIONARIO'
         ) {
             return res.status(404).json({
-                erro: 'Funcionário ativo não encontrado.'
+                erro: 'Funcionário não encontrado.'
             });
         }
 
-        // Desativar sem apagar os dados
-        const excluido =
+        if (Number(usuario.ativo) === 0) {
+            return res.status(409).json({
+                erro: 'Este funcionário já está desativado.'
+            });
+        }
+
+        const desativado =
             await usuarioModel.desativarFuncionario(
                 ID_usuario
             );
 
-        if (!excluido) {
-            return res.status(404).json({
-                erro: 'Funcionário não encontrado ou já excluído.'
+        if (!desativado) {
+            return res.status(409).json({
+                erro: 'Não foi possível desativar o funcionário.'
             });
         }
 
         return res.json({
-            mensagem: 'Funcionário excluído com sucesso. O histórico foi preservado.'
+            mensagem: 'Funcionário desativado com sucesso. O histórico foi preservado.'
+        });
+
+    } catch (e) {
+        next(e);
+    }
+}
+
+// ATIVAR FUNCIONÁRIO
+async function ativarFuncionario(req, res, next) {
+    try {
+        const ID_usuario = validarID(req, res);
+
+        if (ID_usuario === null) {
+            return;
+        }
+
+        const usuario =
+            await usuarioModel.buscarPorID(ID_usuario);
+
+        if (
+            !usuario ||
+            usuario.tipo !== 'FUNCIONARIO'
+        ) {
+            return res.status(404).json({
+                erro: 'Funcionário não encontrado.'
+            });
+        }
+
+        if (Number(usuario.ativo) === 1) {
+            return res.status(409).json({
+                erro: 'Este funcionário já está ativo.'
+            });
+        }
+
+        const ativado =
+            await usuarioModel.ativarFuncionario(
+                ID_usuario
+            );
+
+        if (!ativado) {
+            return res.status(409).json({
+                erro: 'Não foi possível ativar o funcionário.'
+            });
+        }
+
+        return res.json({
+            mensagem: 'Funcionário ativado com sucesso.'
         });
 
     } catch (e) {
@@ -125,5 +184,6 @@ module.exports = {
     registrar,
     login,
     listarFuncionarios,
-    excluirFuncionario
+    desativarFuncionario,
+    ativarFuncionario
 };

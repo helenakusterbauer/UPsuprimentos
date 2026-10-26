@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 
@@ -6,7 +7,10 @@ const autenticar = require('../middlewares/auth');
 const Admin = require('../middlewares/adm');
 
 // LOGIN
-router.post('/login', authController.login);
+router.post(
+    '/login',
+    authController.login
+);
 
 // CADASTRAR FUNCIONÁRIO
 // Somente administradores
@@ -17,7 +21,7 @@ router.post(
     authController.registrar
 );
 
-// LISTAR FUNCIONÁRIOS
+// LISTAR FUNCIONÁRIOS ATIVOS E INATIVOS
 // Somente administradores
 router.get(
     '/funcionarios',
@@ -26,14 +30,24 @@ router.get(
     authController.listarFuncionarios
 );
 
-// EXCLUIR FUNCIONÁRIO
+// DESATIVAR FUNCIONÁRIO
 // Somente administradores
-// O histórico de movimentações será preservado
-router.delete(
-    '/funcionarios/:id',
+// Preserva o cadastro e o histórico de movimentações
+router.patch(
+    '/funcionarios/:id/desativar',
     autenticar,
     Admin,
-    authController.excluirFuncionario
+    authController.desativarFuncionario
+);
+
+// ATIVAR FUNCIONÁRIO
+// Somente administradores
+// Permite que o funcionário volte a acessar o sistema
+router.patch(
+    '/funcionarios/:id/ativar',
+    autenticar,
+    Admin,
+    authController.ativarFuncionario
 );
 
 module.exports = router;
