@@ -229,17 +229,55 @@ async function carregar(aba) {
             }
 
 
+                        
+                        
             $('#alertas').innerHTML = (
                 d.produto_abaixo_minimo || []
-            ).map(p => `
-                <p>
-                    ${esc(p.nome)} —
-                    ${esc(p.quantidade)} unidade(s);
-                    mínimo: ${esc(p.estoque_minimo)}
-                </p>
-            `).join('') || 'Nenhum alerta.';
-        }
+            ).map(p => {
+                const quantidade = Number(p.quantidade);
+                const minimo = Number(p.estoque_minimo);
+                const abaixo = quantidade < minimo;
+                const faltam = Math.max(0, minimo - quantidade);
 
+                return `
+                    <div class="alerta-estoque ${abaixo ? 'alerta-critico' : ''}">
+
+                        <div class="alerta-topo">
+                            <strong>${esc(p.nome)}</strong>
+
+                            <span class="alerta-status">
+                                ${abaixo ? 'Estoque crítico' : 'Estoque mínimo atingido'}
+                            </span>
+                        </div>
+
+                        <div class="alerta-dados">
+                            <div>
+                                <small>Disponível</small>
+                                <strong>${quantidade} unidades</strong>
+                            </div>
+
+                            <div>
+                                <small>Estoque mínimo</small>
+                                <strong>${minimo} unidades</strong>
+                            </div>
+                        </div>
+
+                        <p class="alerta-info">
+                            ${abaixo
+                                ? `Faltam ${faltam} unidade(s) para atingir o mínimo.`
+                                : 'Você está no estoque mínimo!'}
+                        </p>
+
+                        <p class="alerta-reposicao">
+                            ${abaixo
+                                ? 'Repor estoque urgentemente!'
+                                : 'Repor estoque!'}
+                        </p>
+
+                    </div>
+                `;
+            }).join('') || '<p class="sem-alertas">✓ Nenhum produto com estoque baixo.</p>';
+            }
 
        
         // PRODUTOS
@@ -387,6 +425,7 @@ async function carregar(aba) {
                         <td>${esc(m.tipo)}</td>
                         <td>${esc(m.quantidade)}</td>
                         <td>${esc(m.usuario_nome)}</td>
+                        <td>${esc(m.descricao || '—')}</td>
                     </tr>
                 `).join('');
         }
@@ -590,59 +629,35 @@ function abrir(tipo, obj = null) {
 
 
             // FOTO DO PRODUTO
-            `
-                <label class="field wide">
-                    Foto do produto
+           `
+            <div class="field wide upload-field">
+                <span class="upload-title">Foto do produto</span>
 
+                <label class="upload-area">
+                    <span class="upload-icon">📷</span>
+
+                    <span class="upload-content">
+                        <strong>Escolha uma imagem do produto</strong>
+                        <span>Clique para selecionar uma imagem</span>
+                        <span class="upload-button">Escolher arquivo</span>
+                        <span class="upload-filename">Nenhum arquivo escolhido</span>
+                    </span>
 
                     <input
                         type="file"
                         name="imagem"
                         accept="image/jpeg,image/png,image/webp"
+                        class="upload-input"
+                        onchange="this.closest('.upload-area').querySelector('.upload-filename').textContent = this.files[0]?.name || 'Nenhum arquivo escolhido'"
                     >
-
-
-                    <small>
-                        Selecione uma imagem JPG, PNG ou WEBP
-                        de até 5 MB.
-                    </small>
-                </label>
-            ` +
-
-
-            // CATEGORIA E DESCRIÇÃO
-            `
-                <label class="field">
-                    Categoria
-
-
-                    <select name="ID_categoria" required>
-                        ${categorias.map(c => `
-                            <option
-                                value="${esc(c.ID_categoria)}"
-                                ${String(c.ID_categoria) === String(obj?.ID_categoria)
-                                    ? 'selected'
-                                    : ''}
-                            >
-                                ${esc(c.nome)}
-                            </option>
-                        `).join('')}
-                    </select>
                 </label>
 
-
-                <label class="field wide">
-                    Descrição
-
-
-                    <textarea
-                        name="descricao"
-                        rows="3"
-                    >${esc(obj?.descricao)}</textarea>
-                </label>
-            `;
-    }
-
+                <small class="upload-help">
+                    Selecione uma imagem JPG, PNG ou WEBP de até 5 MB.
+                </small>
+            </div>
+        ` ;
+}
 
    
     // FORMULÁRIO DE CATEGORIA
